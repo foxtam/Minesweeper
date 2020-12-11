@@ -7,6 +7,8 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         System.out.print("How many mines do you want on the field? > ");
         int mineNumber = scanner.nextInt();
-        System.out.println(new Minefield(9, 9, mineNumber));
+        final var field = new Minefield(9, 9, mineNumber);
+        field.countMinesAroundCells();
+        System.out.println(field);
     }
 }
