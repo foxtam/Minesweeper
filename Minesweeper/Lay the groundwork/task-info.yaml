@@ -55,6 +55,12 @@ files:
 - name: src/minesweeper/Minefield.java
   visible: true
   learner_created: true
+- name: src/minesweeper/Point.java
+  visible: true
+  learner_created: true
+- name: src/minesweeper/WrongCoordinatesException.java
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/77/stages/426/implement#comment
 status: Failed
 feedback:

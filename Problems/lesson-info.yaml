@@ -15,3 +15,4 @@ content:
 - Start or end of a word
 - Find a word with a given length
 - Number parsing
+- Check IP address
