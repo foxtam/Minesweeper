@@ -605,20 +605,14 @@ files:
         }
     }
   learner_created: true
-- name: src/minesweeper/Point.java
+- name: src/minesweeper/Game.java
   visible: true
-  text: |
-    package minesweeper;
-
-    public class Point {
-        public final int row;
-        public final int column;
-
-        public Point(int column, int row) {
-            this.row = row;
-            this.column = column;
-        }
-    }
+  learner_created: true
+- name: src/minesweeper/GameStatus.java
+  visible: true
+  learner_created: true
+- name: src/minesweeper/Command.java
+  visible: true
   learner_created: true
 feedback_link: https://hyperskill.org/projects/77/stages/430/implement#comment
 status: Failed
@@ -640,27 +634,27 @@ feedback:
     2|.........|
     3|.........|
     4|.........|
-    5|.........|
-    6|.........|
-    7|.........|
-    8|111......|
-    9|1.1......|
+    5|11.......|
+    6|.1.......|
+    7|11.......|
+    8|.........|
+    9|.........|
     —│—————————│
 
-    Set/delete mine marks (x and y coordinates): &gt; &gt; 4 7 free
+    Set/delete mine marks (x and y coordinates): &gt; &gt; 8 5 free
      │123456789│
     —│—————————│
     1|.........|
     2|.........|
     3|.........|
     4|.........|
-    5|.........|
-    6|.........|
-    7|...*.....|
-    8|111......|
-    9|1.1......|
+    5|11.....*.|
+    6|.1.......|
+    7|11.......|
+    8|.........|
+    9|.........|
     —│—————————│
 
     Set/delete mine marks (x and y coordinates): &gt;
-  time: Sun, 13 Dec 2020 13:19:33 UTC
+  time: Sun, 13 Dec 2020 16:52:56 UTC
 record: 5

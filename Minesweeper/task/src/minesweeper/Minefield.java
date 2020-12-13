@@ -1,6 +1,8 @@
 package minesweeper;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class Minefield {
     private static final char emptyCellSymbol = '.';
@@ -10,39 +12,22 @@ public class Minefield {
     private final int width;
     private final int height;
     private final int mineNumber;
-    private final char[][] userField;
-    private final char[][] mineField;
+    private char[][] userField;
+    private char[][] mineField;
+    private boolean noOneClaimCell = true;
 
     public Minefield(int width, int height, int mineNumber) {
         this.width = width;
         this.height = height;
         this.mineNumber = mineNumber;
-        this.mineField = getInitMineField();
-        this.userField = getInitUserField();
+        initUserField();
     }
 
-    private char[][] getInitMineField() {
-        char[][] field = new char[height][width];
-        for (char[] chars : field) {
+    private void initUserField() {
+        userField = new char[height][width];
+        for (char[] chars : userField) {
             Arrays.fill(chars, '.');
         }
-        for (int i = 0; i < mineNumber; ) {
-            int row = (int) (Math.random() * height);
-            int column = (int) (Math.random() * width);
-            if (field[row][column] == emptyCellSymbol) {
-                field[row][column] = mineSymbol;
-                i++;
-            }
-        }
-        return field;
-    }
-
-    private char[][] getInitUserField() {
-        char[][] field = new char[height][width];
-        for (char[] chars : field) {
-            Arrays.fill(chars, '.');
-        }
-        return field;
     }
 
     public void countMinesAroundCells() {
@@ -88,18 +73,22 @@ public class Minefield {
         return builder.toString();
     }
 
-    public boolean allMinesMarkedOnly() {
+    public boolean areAllMinesMarkedOnly() {
+        if (mineField == null) return false;
+
+        List<Character> significant = List.of(markedCellSymbol, emptyCellSymbol);
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                if (userField[i][j] == markedCellSymbol && mineField[i][j] != mineSymbol
-                        || userField[i][j] != markedCellSymbol && mineField[i][j] == mineSymbol) return false;
+                boolean equalsAny = significant.contains(userField[i][j]);
+                if (equalsAny && mineField[i][j] != mineSymbol
+                        || !equalsAny && mineField[i][j] == mineSymbol) return false;
             }
         }
         return true;
     }
 
     public void markCell(Point point) throws WrongCoordinatesException {
-        point = new Point(point.column - 1, point.row - 1);
+        point = new Point(point.row - 1, point.column - 1);
         switch (userField[point.row][point.column]) {
             case emptyCellSymbol:
                 userField[point.row][point.column] = markedCellSymbol;
@@ -109,6 +98,70 @@ public class Minefield {
                 break;
             default:
                 throw new WrongCoordinatesException();
+        }
+    }
+
+    public void claimCell(Point point) {
+        if (noOneClaimCell) {
+            noOneClaimCell = false;
+            initMineFieldWith(point);
+        }
+
+    }
+
+    private void initMineFieldWith(Point freePoint) {
+        mineField = new char[height][width];
+        for (char[] chars : mineField) {
+            Arrays.fill(chars, '.');
+        }
+        for (int i = 0; i < mineNumber; ) {
+            int row = (int) (Math.random() * height);
+            int column = (int) (Math.random() * width);
+            if (mineField[row][column] == emptyCellSymbol && !new Point(row, column).equals(freePoint)) {
+                mineField[row][column] = mineSymbol;
+                i++;
+            }
+        }
+    }
+
+    public boolean isMineClaimed() {
+        for (char[] row : userField) {
+            for (char ch : row) {
+                if (ch == mineSymbol) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public class Point {
+        public final int row;
+        public final int column;
+
+        public Point(Game.Point point) {
+            this(point.row - 1, point.column - 1);
+        }
+
+        public Point(int row, int column) {
+            if (Math.min(row, column) < 0 || row >= height || column >= width) {
+                throw new IllegalArgumentException();
+            }
+            this.row = row;
+            this.column = column;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Point point = (Point) o;
+            return row == point.row && column == point.column;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(row, column);
         }
     }
 }
