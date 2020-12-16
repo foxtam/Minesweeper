@@ -1,8 +1,9 @@
 package minesweeper;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 
 public class Minefield {
     private static final char emptyCellSymbol = '.';
@@ -15,6 +16,8 @@ public class Minefield {
     private char[][] userField;
     private char[][] mineField;
     private boolean noOneClaimCell = true;
+
+    private final Set<Point> visitedCells = new HashSet<>();
 
     public Minefield(int width, int height, int mineNumber) {
         this.width = width;
@@ -30,37 +33,12 @@ public class Minefield {
         }
     }
 
-    public void countMinesAroundCells() {
-        for (int row = 0; row < height; row++) {
-            for (int column = 0; column < width; column++) {
-                if (mineField[row][column] == mineSymbol) continue;
-                int minesNumber = countMinesAroundCurrentCell(row, column);
-                if (minesNumber > 0) {
-                    userField[row][column] = String.valueOf(minesNumber).charAt(0);
-                }
-            }
-        }
-    }
-
-    private int countMinesAroundCurrentCell(int row, int column) {
-        int count = 0;
-        for (int i = -1; i <= 1; i++) {
-            for (int j = -1; j <= 1; j++) {
-                if (i == 0 && j == 0) continue;
-                if (isInField(row + i, column + j) && hasMineAt(row + i, column + j)) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
     private boolean isInField(int row, int column) {
         return row >= 0 && row < height && column >= 0 && column < width;
     }
 
-    private boolean hasMineAt(int row, int column) {
-        return mineField[row][column] == mineSymbol;
+    private boolean isInField(Point point) {
+        return isInField(point.row, point.column);
     }
 
     @Override
@@ -88,7 +66,6 @@ public class Minefield {
     }
 
     public void markCell(Point point) throws WrongCoordinatesException {
-        point = new Point(point.row - 1, point.column - 1);
         switch (userField[point.row][point.column]) {
             case emptyCellSymbol:
                 userField[point.row][point.column] = markedCellSymbol;
@@ -106,7 +83,7 @@ public class Minefield {
             noOneClaimCell = false;
             initMineFieldWith(point);
         }
-
+        visitCell(point);
     }
 
     private void initMineFieldWith(Point freePoint) {
@@ -124,6 +101,52 @@ public class Minefield {
         }
     }
 
+    private void visitCell(Point point) {
+        visitedCells.add(point);
+        if (hasMineInCell(point)) {
+            userField[point.row][point.column] = mineSymbol;
+            return;
+        }
+        int mineNumber = countMinesInNearCells(point);
+        if (mineNumber > 0) {
+            userField[point.row][point.column] = String.valueOf(mineNumber).charAt(0);
+        } else {
+            userField[point.row][point.column] = '/';
+            visitNearCells(point);
+        }
+    }
+
+    private int countMinesInNearCells(Point point) {
+        int count = 0;
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                Point nextPoint = new Point(point.row + i, point.column + j);
+                if (isInField(nextPoint) && hasMineInCell(nextPoint)) {
+                    count++;
+                }
+            }
+        }
+        if (hasMineInCell(point)) {
+            count--;
+        }
+        return count;
+    }
+
+    private boolean hasMineInCell(Point point) {
+        return mineField[point.row][point.column] == mineSymbol;
+    }
+
+    private void visitNearCells(Point point) {
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                Point nextPoint = new Point(point.row + i, point.column + j);
+                if (isInField(nextPoint) && !visitedCells.contains(nextPoint)) {
+                    visitCell(nextPoint);
+                }
+            }
+        }
+    }
+
     public boolean isMineClaimed() {
         for (char[] row : userField) {
             for (char ch : row) {
@@ -133,35 +156,5 @@ public class Minefield {
             }
         }
         return false;
-    }
-
-    public class Point {
-        public final int row;
-        public final int column;
-
-        public Point(Game.Point point) {
-            this(point.row - 1, point.column - 1);
-        }
-
-        public Point(int row, int column) {
-            if (Math.min(row, column) < 0 || row >= height || column >= width) {
-                throw new IllegalArgumentException();
-            }
-            this.row = row;
-            this.column = column;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Point point = (Point) o;
-            return row == point.row && column == point.column;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(row, column);
-        }
     }
 }

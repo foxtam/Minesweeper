@@ -1,6 +1,5 @@
 package minesweeper;
 
-import java.util.Objects;
 import java.util.Scanner;
 
 public class Game {
@@ -49,10 +48,10 @@ public class Game {
         Command command = readUserInput();
         switch (command.action) {
             case "mine":
-                minefield.markCell(minefield.new Point(command.point));
+                minefield.markCell(command.point);
                 break;
             case "free":
-                minefield.claimCell(minefield.new Point(command.point));
+                minefield.claimCell(command.point);
                 break;
             default:
                 throw new IllegalArgumentException();
@@ -62,37 +61,7 @@ public class Game {
 
     private Command readUserInput() {
         String[] line = scanner.nextLine().split("\\s+");
-        Point point = new Point(Integer.parseInt(line[0]), Integer.parseInt(line[1]));
+        Point point = new Point(Integer.parseInt(line[1]) - 1, Integer.parseInt(line[0]) - 1);
         return new Command(point, line[2]);
-    }
-
-    public static class Point {
-        public final int row;
-        public final int column;
-
-        public Point(Minefield.Point point) {
-            this(point.column + 1, point.row + 1);
-        }
-
-        public Point(int column, int row) {
-            if (Math.min(row, column) < 1) {
-                throw new IllegalArgumentException();
-            }
-            this.row = row;
-            this.column = column;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Point point = (Point) o;
-            return row == point.row && column == point.column;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(row, column);
-        }
     }
 }
